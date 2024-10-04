@@ -15,18 +15,17 @@ from dotenv import load_dotenv, set_key
 from django.core.management.utils import get_random_secret_key
 import os
 
-load_dotenv(override=True)
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+load_dotenv(dotenv_path=BASE_DIR / '.env', override=True)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 if os.environ.get('SECRET_KEY') is None:
     set_key(BASE_DIR / '.env', 'SECRET_KEY', get_random_secret_key())
-    load_dotenv(override=True)
+    load_dotenv(dotenv_path=BASE_DIR / '.env', override=True)
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get('SECRET_KEY')
