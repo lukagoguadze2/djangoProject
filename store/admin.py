@@ -6,5 +6,9 @@ class SlugifyName(admin.ModelAdmin):
     prepopulated_fields = {"slug": ["name"]}
 
 
-admin.site.register(Category)
+class CategoryView(admin.ModelAdmin):
+    list_display = ('name', 'parent')
+
+
+admin.site.register(Category, CategoryView)
 admin.site.register(Product, SlugifyName)
