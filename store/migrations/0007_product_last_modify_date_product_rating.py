@@ -18,6 +18,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='product',
             name='rating',
-            field=models.IntegerField(default=5),
+            field=models.IntegerField(default=5, verbose_name='პროდუქტის რეიტინგი'),
         ),
     ]
