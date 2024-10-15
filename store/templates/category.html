@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Store</title>
+</head>
+<body>
+<br>
+<strong>Categories without parent category</strong>
+<ul>
+    {% for category in categories %}
+        <li>
+            <a href="{% url 'category_products' category.id %}" style="text-decoration: none;">
+                {{ category.name }}
+            </a>
+            - With {{ category.total_product_count }} unique products
+                [
+                    {{ category.direct_product_count }} direct product(s),
+                    {{ category.subcategory_product_count }} subcategory product(s)
+                ]
+
+                with {{ category.intersection_count }} intersection product(s).
+        </li>
+    {% endfor %}
+</ul>
+<br>
+<p><b>UNIQUE PRODUCT(s):</b> These are the products from the main category and its subcategories, counted only once.</p>
+<p><b>DIRECT PRODUCT(s):</b> These are the products that belong directly to the main category.</p>
+<p><b>SUBCATEGORY PRODUCT(s):</b> These are the products that belong to the subcategories of the main category.</p>
+</body>
+</html>

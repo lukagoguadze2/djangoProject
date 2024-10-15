@@ -2,7 +2,8 @@ import os
 
 from typing import Optional
 from django.db import models
-from djangoProject.settings import MEDIA_URL
+from django.conf import settings
+from .managers import CategoryManager, ProductManager
 
 
 class Category(models.Model):
@@ -12,11 +13,13 @@ class Category(models.Model):
         on_delete=models.CASCADE,
         null=True,
         blank=True,
-        verbose_name='მშობელი კატეგორია'
+        verbose_name='მშობელი კატეგორია',
     )
 
     class Meta:
         ordering = ['name']
+
+    objects = CategoryManager()
 
     @staticmethod
     def __get_name_and_id(category: Optional['Category'] = None) -> dict:
@@ -41,8 +44,9 @@ class Product(models.Model):
     description = models.TextField(blank=True, verbose_name='პროდუქტის აღწერა', default='')
     slug = models.SlugField(max_length=255)
     price = models.DecimalField(verbose_name='ფასი', max_digits=10, decimal_places=2)
+    quantity = models.IntegerField(verbose_name='რაოდენობა', default=0)
     category = models.ManyToManyField(
-        to='Category', verbose_name='კატეგორიები',
+        to='Category', verbose_name='კატეგორიები'
     )
     product_add_date = models.DateTimeField(auto_now_add=True)
     last_modify_date = models.DateTimeField(auto_now=True)
@@ -52,20 +56,23 @@ class Product(models.Model):
     class Meta:
         ordering = ['-id']
 
+    objects = ProductManager()
+
     def values(self):
         return {
             'id': self.id,
             'name': self.name,
-            'description': self.description ,
+            'description': self.description,
             'price': float(self.price),
+            'quantity': self.quantity,
             'slug': self.slug,
             'categories': [
                 cat.values(include_parent=False) for cat in self.category.all()
             ],
             'create_time': self.product_add_date,
             'last_mod': self.last_modify_date,
-            'image': MEDIA_URL + self.image.name if self.image else None,
-            'rating': self.rating
+            'image': settings.MEDIA_URL + self.image.name if self.image else None,
+            'rating': self.rating,
         }
 
     def delete(self, *args, **kwargs):
