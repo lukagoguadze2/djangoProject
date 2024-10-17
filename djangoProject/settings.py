@@ -35,6 +35,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+AUTH_USER_MODEL = 'user.User'
+
 INTERNAL_IPS = [
     "127.0.0.1",
     "localhost",
@@ -51,6 +53,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     "store.apps.StoreConfig",
     "order.apps.OrderConfig",
+    "user.apps.UserConfig",
 ]
 
 if DEBUG:
