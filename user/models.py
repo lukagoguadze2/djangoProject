@@ -1,12 +1,13 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, PermissionsMixin
 from django.contrib.auth.base_user import BaseUserManager
+from django.contrib.auth.hashers import make_password
 
 
 class UserManager(BaseUserManager):
     @staticmethod
     def __validate_fields(email, username, password):
-        if not email or not username:
+        if not email and not username:
             raise ValueError('შეიყვანეთ იმეილი ან მომხმარებლის სახელი')
         if not password:
             raise ValueError('შეიყვანეთ პაროლი')
@@ -38,3 +39,9 @@ class User(AbstractUser, PermissionsMixin):
     address = models.CharField(max_length=255, null=True, blank=True, verbose_name="მისამართი")
 
     objects = UserManager()
+
+    def save(self, *args, **kwargs):
+        if self.password and not self.password.startswith(('pbkdf2_sha256$', 'bcrypt$', 'argon2')):
+            self.password = make_password(self.password)
+
+        super().save(*args, **kwargs)
