@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>{% block title %}{% endblock %}</title>
+        <meta content="width=device-width, initial-scale=1.0" name="viewport">
+        <meta content="{% block keywords %}{% endblock %}" name="keywords">
+        <meta content="{% block description %}{% endblock %}" name="description">
+
+        {% include 'imports/stylesheets.html' %}
+        {% block stylesheets %}
+
+        {% endblock %}
+    </head>
+<body>
+    {% include 'partials/spinner.html' %}
+
+    {% include 'partials/header.html' %}
+    
+    {% include 'partials/modal_search.html' %}
+
+    {% block content %}
+
+    {% endblock %}
+
+    {% include 'partials/footer.html' %}
+
+    {% include 'partials/back_to_top.html' %}
+    {% include 'imports/scripts.html' %}
+    {% block scripts %}
+
+    {% endblock %}
+</body>
+</html>
