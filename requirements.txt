@@ -6,3 +6,8 @@ tzdata==2024.2
 requests~=2.32.3
 Pillow==10.4.0
 django-debug-toolbar==4.4.6
+pip~=23.2.1
+certifi~=2024.8.30
+urllib3~=2.2.3
+idna~=3.10
+django-mptt~=0.16.0

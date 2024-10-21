@@ -35,6 +35,10 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+AUTH_USER_MODEL = 'user.User'
+
+WEBSITE_NAME = "Culinary Cart"
+
 INTERNAL_IPS = [
     "127.0.0.1",
     "localhost",
@@ -49,8 +53,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    "mptt",
     "store.apps.StoreConfig",
     "order.apps.OrderConfig",
+    "user.apps.UserConfig",
+    "main.apps.MainConfig",
 ]
 
 if DEBUG:
@@ -74,8 +81,12 @@ ROOT_URLCONF = 'djangoProject.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates']
-        ,
+        'DIRS': [
+            BASE_DIR / 'templates',
+            BASE_DIR / 'store/templates',
+            BASE_DIR / 'order/templates',
+            BASE_DIR / 'main/templates',
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -83,6 +94,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'main.context_processors.pages',
+                'main.context_processors.website_name',
             ],
         },
     },
@@ -136,7 +149,17 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
+
+STATIC_ROOT = BASE_DIR / 'productionfiles'
+
 STATIC_URL = 'static/'
+
+STATICFILES_DIRS = [
+    BASE_DIR / 'globalstaticfiles',
+    BASE_DIR / 'order/static',
+    BASE_DIR / 'store/static',
+    BASE_DIR / 'main/static',
+]
 
 MEDIA_URL = '/uploads/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'uploads/')
