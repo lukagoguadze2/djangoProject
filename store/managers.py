@@ -1,8 +1,11 @@
 from django.db import models
-from django.db.models import Q, When, Case, IntegerField
+from django.apps import apps
+from django.db.models import Q, When, Case, IntegerField, Prefetch, Count, Subquery, OuterRef
+from mptt.managers import TreeManager
 
 
-class CategoryManager(models.Manager):
+
+class CategoryManager(TreeManager):
     def get_main_categories_with_subcategories(self):
         all_categories = self.prefetch_related('product_set').annotate(
             is_main_category=Case(
@@ -20,7 +23,7 @@ class CategoryManager(models.Manager):
                 main_categories[category] = []
             else:
                 break  # რადგანაც მთავარი კატეგორიები თავშია შესაბამისად შევწეროთ ციკლი როდესაც ქვეკატეგორია მოიძებნება
-                
+
         added_subcategories = set()
 
         # ციკლი მანამ სანამ ყველა ქვეკატეგორია დაემატება მთავარ კატეგორიებში
@@ -43,7 +46,7 @@ class CategoryManager(models.Manager):
             'all_categories': all_categories
         }
     
-    def with_product_count(self):
+    def get_main_categories_with_product_count(self):
         response = self.get_main_categories_with_subcategories()
         cat_dict = response['category_dict']
         main_categories = cat_dict.keys()
@@ -77,6 +80,18 @@ class CategoryManager(models.Manager):
                 })
 
         return results
+    
+    def get_categories_with_product_count(self):
+        products = apps.get_model('store', 'Product')
+        categories_ = self.select_related('parent').all()
+
+        # დავამატოთ ახალი product_count field რომელიც n+1 queries იყენებს, სხვანაირად ვერ გავაკეთე :დ
+        for cat in categories_:
+            cat.product_count = products.objects.filter(
+                category__in=cat.get_descendants(include_self=True)
+            ).distinct().count()
+
+        return categories_
         
 
 class ProductManager(models.Manager):
@@ -89,5 +104,18 @@ class ProductManager(models.Manager):
                 'category'
             ).filter(
                 # ისეთი პროდუქტები სადაც კატეგორებში არის მთავარი კატეგორია ან ქვეკატეგორია
-                Q(category=category) | Q(category__parent=category)
-            ).distinct().values('id', 'name', 'price', 'quantity')
+                category__in=category.get_descendants(include_self=True)
+            ).distinct().values('id', 'name', 'slug', 'price', 'quantity')
+    
+    def get_products_by_category_id(self, category_id):
+        """
+        Returns a list of all products associated with a particular category and its subcategories
+        :param category:
+        """
+        category = apps.get_model('store', 'Category').objects.get(id=category_id)
+        return self.prefetch_related(
+                'category'
+            ).filter(
+                # ისეთი პროდუქტები სადაც კატეგორებში არის მთავარი კატეგორია ან ქვეკატეგორია
+                category__in=category.get_descendants(include_self=True)
+            ).distinct().values('id', 'name', 'slug', 'price', 'quantity')

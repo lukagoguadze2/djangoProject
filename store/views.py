@@ -1,75 +1,49 @@
 from django.core.paginator import Paginator
-from django.db.models import Max, F, Min, Avg, Sum
+from django.db.models import Max, F, Min, Avg, Sum, Count
 from django.http import JsonResponse
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 
 from .models import Category, Product
 
 
-def categories(request):
-    all_categories = Category.objects.select_related('parent').all()
-
-    categories_list = []
-    for category in all_categories:
-        categories_list.append(
-            category.values(
-                include_parent=True
-            )
-        )
-
-    return JsonResponse(categories_list, safe=False, status=200)
-
-
-def products(request):
-    all_products = Product.objects.all()
-
-    products_list = []
-    for product in all_products:
-        products_list.append(
-            product.values()
-        )
-
-    return JsonResponse(products_list, safe=False, status=200)
-
-
-def category_html(request):
-    all_categories = Category.objects.with_product_count()
-
-    return render(request, 'category.html', {"categories": all_categories})
-
-
-def category_products(request, category_id):
+def index(request, slug=''):  # index view-ს იძახებს ორი სხვადასხვა URL
     page_id = int(page_id) if (page_id := request.GET.get('page', '1')).isdigit() else 1
 
-    category = Category.objects.get(id=category_id)
-    
-    _products = Product.objects.get_products_by_category(
-        category
-    ).annotate(
-        total_price=F('quantity') * F('price')
-    )
+    if slug:
+        category = Category.objects.filter(slug=slug).first()
 
-    statistics = _products.aggregate(
-        most_expensive_price=Max('price'),
-        least_expensive_price=Min('price'),
-        average_product_price=Avg('price'),
-        total_price_of_product=Sum('total_price')
-    )
+        _products = Product.objects.prefetch_related('category').filter(
+            category__in=category.get_descendants(include_self=True)
+        ).distinct()
+    else:
+        category = None
+        _products = Product.objects.prefetch_related('category')
 
-    paginator = Paginator(_products, per_page=2)
+    paginator = Paginator(_products, per_page=6)
 
     return render(
         request,
-        template_name='products.html',
+        template_name='index.html',
         context={
+            "current_page_overload": category.name if category else None,
             "category": category,
-            "statistics": statistics,
-            "paginator": paginator.get_page(page_id)
+            "categories": Category.objects.get_categories_with_product_count(),
+            "page_obj": paginator.get_page(page_id),
         }
     )
 
 
-def product_details(request, product_id: int):
-    product = Product.objects.prefetch_related('category').get(id=product_id)
-    print(product.values())
-    return render(request, 'product_details.html', {"product": product})
+def product_details(request, slug: str, product_id: int):
+    product = get_object_or_404(Product.objects.prefetch_related('category'), id=product_id)
+
+    return render(
+        request,
+        'product_details.html',
+        {
+            "current_page_overload": product.name,
+            "product": product,
+            "categories": Category.objects.get_categories_with_product_count(),
+            "related_products": Product.objects.filter(category__in=product.category.all())
+        }
+    )
+

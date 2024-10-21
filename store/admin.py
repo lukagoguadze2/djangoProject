@@ -1,4 +1,5 @@
 from django.contrib import admin
+from mptt.admin import MPTTModelAdmin
 from .models import Category, Product
 
 
@@ -17,7 +18,9 @@ class ProductView(admin.ModelAdmin):
 
 
 @admin.register(Category)
-class CategoryView(admin.ModelAdmin):
+class CategoryView(MPTTModelAdmin):
+    prepopulated_fields = {"slug": ["name"]}
+
     list_display = ('name', 'parent')
 
     list_select_related = ('parent',)
