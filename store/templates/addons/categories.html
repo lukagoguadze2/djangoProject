@@ -1,5 +1,6 @@
 {% load static %}
 <h4>Categories</h4>
+{% if categories %}
 <ul class="list-unstyled fruite-categorie">
     {% for category in categories %}
     <li>
@@ -10,3 +11,6 @@
     </li>
     {% endfor %}
 </ul>
+{% else %}
+<p>No child categories</p>
+{% endif %}

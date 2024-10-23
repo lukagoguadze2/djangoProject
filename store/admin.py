@@ -1,6 +1,6 @@
 from django.contrib import admin
 from mptt.admin import MPTTModelAdmin
-from .models import Category, Product
+from .models import Category, Product, Tag
 
 
 @admin.register(Product)
@@ -24,3 +24,8 @@ class CategoryView(MPTTModelAdmin):
     list_display = ('name', 'parent')
 
     list_select_related = ('parent',)
+
+
+@admin.register(Tag)
+class TagView(admin.ModelAdmin):
+    fields = ('name',)

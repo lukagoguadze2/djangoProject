@@ -62,6 +62,9 @@ class Product(models.Model):
     category = models.ManyToManyField(
         to='Category', verbose_name='კატეგორიები'
     )
+    tags = models.ManyToManyField(
+        to='Tag', verbose_name='თეგები'
+    )
     product_add_date = models.DateTimeField(auto_now_add=True)
     last_modify_date = models.DateTimeField(auto_now=True)
     image = models.ImageField(upload_to='store/', blank=True, verbose_name='პროდუქტის ფოტო')
@@ -96,6 +99,13 @@ class Product(models.Model):
             os.remove(self.image.path)
 
         super().delete(*args, **kwargs)
+
+    def __str__(self):
+        return self.name
+
+
+class Tag(models.Model):
+    name = models.CharField(max_length=255, verbose_name='თეგის სახელი')
 
     def __str__(self):
         return self.name

@@ -1,15 +1,16 @@
+{% load custom_filter %}
 <div class="col-12">
     <div class="pagination d-flex justify-content-center mt-5">
         {% if page_obj.has_previous %}
-            <a href="?page={{ page_obj.previous_page_number }}" class="rounded">&laquo;</a>
+            <a href="{{ page_obj.previous_page_number|build_qs:request.GET }}" class="rounded">&laquo;</a>
         {% endif %}
 
         {% for page in page_obj.paginator.page_range %}
-            <a href="?page={{ page }}" class="{% if page == page_obj.number %}active {% endif %}rounded">{{ page }}</a>
+            <a href="{{ page|build_qs:request.GET }}" class="{% if page == page_obj.number %}active {% endif %}rounded">{{ page }}</a>
         {% endfor %}
 
         {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}" class="rounded">&raquo;</a>
+            <a href="{{ page_obj.next_page_number|build_qs:request.GET }}" class="rounded">&raquo;</a>
         {% endif %}
 
 {#        <a href="#" class="rounded">&laquo;</a>#}

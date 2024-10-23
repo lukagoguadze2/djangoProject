@@ -1,0 +1,11 @@
+<div class="col-lg-12">
+    <div class="mb-3">
+        <h4>Tags</h4>
+        {% for tag in tags %}
+        <div class="mb-2">
+            <input type="radio" class="me-2" id="tag-{{ tag.id }}" name="tag" value="{{ tag.id }}">
+            <label for="tag-{{ tag.id }}"> {{ tag.name }}</label>
+        </div>
+        {% endfor %}
+    </div>
+</div>

@@ -1,8 +1,7 @@
 from django.db import models
 from django.apps import apps
-from django.db.models import Q, When, Case, IntegerField, Prefetch, Count, Subquery, OuterRef
+from django.db.models import When, Case, IntegerField
 from mptt.managers import TreeManager
-
 
 
 class CategoryManager(TreeManager):
@@ -63,7 +62,7 @@ class CategoryManager(TreeManager):
                     {sub.id for sub in subcategory.product_set.all()}
                 )
 
-        # თანაკვეთა იქნება ისეთი პროდუქტების ID სადაც მთავარი კატეგორია და ამ მთავარი კატეგორიის ქვეკატეგორიებიც აქვს
+            # თანაკვეთა იქნება ისეთი პროდუქტების ID სადაც მთავარი კატეგორია და ამ მთავარი კატეგორიის ქვეკატეგორიებიც აქვს
             intersection_ids_set = direct_product_ids & subcategory_product_ids
 
             # გაერთიანება იქნება ყველა უნიკალური პროდუქტის ID
@@ -73,17 +72,21 @@ class CategoryManager(TreeManager):
             results.append({
                     'id': main_category.id,
                     'name': main_category.name,
+                    'slug': main_category.slug,
                     'direct_product_count': len(direct_product_ids),
                     'subcategory_product_count': len(subcategory_product_ids),
                     'intersection_count': len(intersection_ids_set),
-                    'total_product_count': len(total_unique_ids),
+                    'product_count': len(total_unique_ids),
                 })
 
         return results
-    
-    def get_categories_with_product_count(self):
+
+    def get_categories_with_product_count(self, category=None):
         products = apps.get_model('store', 'Product')
-        categories_ = self.select_related('parent').all()
+        if category is None:
+            categories_ = self.select_related('parent').all()
+        else:
+            categories_ = category.get_children()
 
         # დავამატოთ ახალი product_count field რომელიც n+1 queries იყენებს, სხვანაირად ვერ გავაკეთე :დ
         for cat in categories_:
@@ -110,7 +113,7 @@ class ProductManager(models.Manager):
     def get_products_by_category_id(self, category_id):
         """
         Returns a list of all products associated with a particular category and its subcategories
-        :param category:
+        :param category_id:
         """
         category = apps.get_model('store', 'Category').objects.get(id=category_id)
         return self.prefetch_related(

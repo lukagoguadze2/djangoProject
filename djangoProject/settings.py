@@ -96,6 +96,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'main.context_processors.pages',
                 'main.context_processors.website_name',
+                'main.context_processors.global_variables',
             ],
         },
     },

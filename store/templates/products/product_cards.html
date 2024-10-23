@@ -9,7 +9,7 @@
             {% if category %}
                 {{ category }}
             {% else %}
-                {% for cat in product.category.all %}
+                {% for cat in product.tags.all %}
                      {% if forloop.last %}{{ cat }}{% endif %}
                 {% endfor %}
             {% endif %}
@@ -19,9 +19,14 @@
             <p>{{ product.description }}</p>
             <div class="d-flex justify-content-between flex-lg-wrap">
                 <p class="text-dark fs-5 fw-bold mb-0">${{ product.price }}</p>
-                <a href="#" class="btn border border-secondary rounded-pill px-3 text-primary"><i class="fa fa-shopping-bag me-2 text-primary"></i> Add to cart</a>
+                 <form method="POST">
+                    {% csrf_token %}
+                     <input type="hidden" name="quantity" value="1">
+                    {% include 'addons/add_to_cart_form.html' %}
+                 </form>
             </div>
         </div>
     </div>
 </div>
 {% endfor %}
+<script>{% if add_item_form.errors %}window.alert('{{ add_item_form.errors }}'){% endif %}</script>
