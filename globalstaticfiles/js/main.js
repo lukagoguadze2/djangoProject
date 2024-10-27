@@ -147,5 +147,29 @@
         button.parent().parent().find('input').val(newVal);
     });
 
+    $('.forms').on('submit', function(event) {
+        event.preventDefault();
+
+        const currentParams = new URLSearchParams(window.location.search);
+        const formData = $(this).serializeArray();
+
+        $.each(formData, function(i, field) {
+            if (field.value === '0') {
+                currentParams.delete(field.name);
+            } else {
+                currentParams.set(field.name, field.value);
+            }
+        });
+
+        const baseUrl = window.location.pathname;
+        const newUrl = `${baseUrl}?${currentParams.toString()}`;
+
+        window.location.href = newUrl;
+    });
+
+    $('#fruits').on('change', function() {
+        $(this).closest('form').submit();
+    });
+
 })(jQuery);
 
