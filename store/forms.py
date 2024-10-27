@@ -1,7 +1,7 @@
 from django import forms
 
 
-class SearchCategory(forms.Form):
+class SearchForm(forms.Form):
     q = forms.CharField(
         max_length=100,
         widget=forms.TextInput(

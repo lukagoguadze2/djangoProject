@@ -15,7 +15,11 @@
                 <p>{{ related_product.description }}</p>
                 <div class="d-flex justify-content-between flex-lg-wrap">
                     <p class="text-dark fs-5 fw-bold">${{ related_product.price }}</p>
-                    <a href="#" class="btn border border-secondary rounded-pill px-3 py-1 mb-4 text-primary"><i class="fa fa-shopping-bag me-2 text-primary"></i> Add to cart</a>
+                    <form method="POST">
+                        {% csrf_token %}
+                         <input type="hidden" name="quantity" value="1">
+                        {% include 'addons/add_to_cart_form.html' with product=related_product %}
+                     </form>
                 </div>
             </div>
         </div>

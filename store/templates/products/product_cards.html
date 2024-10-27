@@ -29,4 +29,5 @@
     </div>
 </div>
 {% endfor %}
-<script>{% if add_item_form.errors %}window.alert('{{ add_item_form.errors }}'){% endif %}</script>
+{# თუ ფორმას რაიმე ერორი აქვს მაშინ გამოვიტანოთ ALERT-ის დახმარებით #}
+<script>{% if add_item_form.errors %}window.addEventListener('load', () => {window.alert('{{ add_item_form.errors }}')});{% endif %}</script>

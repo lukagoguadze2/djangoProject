@@ -45,3 +45,8 @@ def add_numbers(s1, s2):
 @register.filter
 def is_dict(value):
     return isinstance(value, dict)
+
+
+@register.filter(name="to_string")
+def to_string(value):
+    return str(value)

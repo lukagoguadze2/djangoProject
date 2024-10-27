@@ -1,18 +1,15 @@
-from django.http import HttpResponse
-from django.shortcuts import render
+from django.views.generic import TemplateView, ListView
+from order.forms import AddItemForm
 from store.models import Product
 
 
-def index(request):
-    latest_eight = Product.objects.prefetch_related('category').all()[:8]
-
-    return HttpResponse(
-        render(request, 'pages/index.html', context={
-            "latest_products": latest_eight,
-            "related_products": latest_eight
-        })
-    )
+class IndexView(ListView):
+    model = Product
+    queryset = Product.objects.all()[:8]
+    template_name = 'pages/index.html'
+    context_object_name = 'products'
 
 
-def contact(request):
-    return render(request, 'pages/contact.html', {})
+class ContactView(TemplateView):
+    template_name = 'pages/contact.html'
+

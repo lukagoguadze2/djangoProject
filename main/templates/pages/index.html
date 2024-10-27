@@ -6,14 +6,14 @@
     {% include 'sections/hero.html' %}
 
     {% include 'sections/features.html' %}
-
-    {% include 'sections/shop.html' %}
+    {{ product }}
+    {% include 'sections/shop.html' with latest_products=products %}
 
 {#    {% include 'sections/service.html' %}#}
 
     {% include 'sections/banner.html' %}
 
-    {% include 'sections/scroll_shop.html' %}
+    {% include 'sections/scroll_shop.html' with related_products=products %}
 
 {#    {% include 'sections/bestseller.html' %}#}
 

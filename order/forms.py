@@ -21,19 +21,20 @@ class AddItemForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
-        quantity = cleaned_data.get('quantity')
-        product = cleaned_data.get('product')
-        cart = cleaned_data.get('cart')
+        if self.instance.product_id is not None:  # თუ instance არის გადაცემული მაშინ შევამოწმოთ პირდაპირ
+            cleaned_data['quantity'] = self.instance.quantity + cleaned_data.get('quantity', 0)
+            if cleaned_data['quantity'] > self.instance.product.quantity:
+                raise ValidationError(
+                    f"ბაზაში არის მხოლოდ {self.instance.product.quantity} {self.instance.product.name}"
+                )
 
-        if cart and product and quantity is not None:
-            item_exists = Item.objects.filter(cart=cart, product=product).first()
-            if item_exists and item_exists.quantity + quantity > product.quantity:
-                raise ValidationError(f'ბაზაში არის მხოლოდ {product.quantity} პროდუქტი.')
-            elif quantity > product.quantity:
-                raise ValidationError(f'ბაზაში არის მხოლოდ {product.quantity} პროდუქტი.')
-
-            if item_exists:
-                item_exists.quantity += quantity
-                item_exists.save()
+        elif (  # თუ პირველად ემატება Item-ი მაშინ შევამოწმოთ შემდეგნაირად
+                'quantity' in cleaned_data and
+                'product' in cleaned_data and
+                cleaned_data['quantity'] > cleaned_data['product'].quantity
+        ):
+            raise ValidationError(
+                f"ბაზაში არის მხოლოდ {cleaned_data['product'].quantity} {cleaned_data['product'].name}"
+            )
 
         return cleaned_data

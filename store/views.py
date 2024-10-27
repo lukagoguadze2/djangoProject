@@ -1,119 +1,131 @@
-from django.core.paginator import Paginator
+from abc import abstractmethod, ABC
+
 from django.db.models import Q
+from django.views import View
+from django.views.generic import ListView, DetailView
+
 from order.forms import AddItemForm
-from .forms import SearchCategory
-from django.shortcuts import render, get_object_or_404
+from .forms import SearchForm
+from django.shortcuts import get_object_or_404
 
 from .models import Category, Product, Tag
+from order.models import Item
 
 
-def index(request, slug=''):  # index view-ს იძახებს ორი სხვადასხვა URL
-    nothing, price_low_to_high, price_high_to_low, by_date = '0', '1', '2', '3'
-    page_id = int(page_id) if (page_id := request.GET.get('page', '1')).isdigit() else 1
+# რადგან ერთი და იმავე POST რექუერსტს ვიყენევთ გამოვაცხადოთ abstract კლასი
+class PostRequest(View, ABC):
+    additional_context = {}  # ჩვენით ჩავამატოთ რაიმე დამატებითი კონტექსტი
 
-    add_item_form = None
-    if request.method == "POST":
-        item_data = request.POST.copy()
-        item_data['cart'] = request.user.usercart.id
+    @abstractmethod
+    def get(self, request, *args, **kwargs):
+        pass
 
-        add_item_form = _submit_form(item_data, request.method)
+    def post(self, request, *args, **kwargs):
+        item_data = self.request.POST.copy()
+        if self.request.user.is_authenticated:  # შევამოწმოთ თუ მომხმარებელი არის შესული ექაუნთში
+            item_data['cart'] = self.request.user.usercart.id
 
-    # პროდუქტების გაფილტვრა კატეგორიის მიხედვით START
-    if slug:
-        category = Category.objects.filter(slug=slug).first()
+            if item := Item.objects.select_related('product').filter(
+                    product_id=item_data.get('product'),
+                    cart_id=item_data.get('cart')
+            ).first():
+                add_item_form = AddItemForm(item_data, instance=item)
+            else:
+                add_item_form = AddItemForm(item_data)
 
-        _products = Product.objects.prefetch_related('category').filter(
-            category__in=category.get_descendants(include_self=True)
-        ).distinct()
-    else:
-        category = None
-        _products = Product.objects.prefetch_related('category')
-    # პროდუქტების გაფილტვრა კატეგორიის მიხედვით END
+            if add_item_form.is_valid():
+                add_item_form.save()
 
-    # პროდუქტების გაფილტვრა form-ით
-    form = SearchCategory()
-    results = _products
+            self.additional_context['add_item_form'] = add_item_form
 
-    if 'q' in request.GET:
-        form = SearchCategory(request.GET)
-        if form.is_valid():
-            q = form.cleaned_data['q']
-            # შევამოწმოთ დასერჩილი სიტყვა არის თუ არა სახელში, აღწერაში ან სლეგში
-            results = _products.filter(
-                Q(name__icontains=q) |
-                Q(description__icontains=q) |
-                Q(slug__icontains=q)
+        return self.get(request, *args, **kwargs)
+
+
+class IndexView(ListView, PostRequest):
+    model = Product
+    paginate_by = 6
+    template_name = 'index.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        slug = self.kwargs.get('slug', '')
+
+        # თუ slug არის მაშინ კატეგორიების URL-იძახებს views
+        if slug:
+            category = get_object_or_404(Category, slug=slug)
+            context['current_page_overload'] = category.name
+            context['categories'] = Category.objects.get_categories_with_product_count(category)
+        else:
+            context['current_page_overload'] = None
+            context['categories'] = Category.objects.get_main_categories_with_product_count()
+
+        context['tags'] = Tag.objects.all()
+        context['form'] = SearchForm(self.request.GET or None)  # ეს ფორმა გამოიყენება პროდუქტების სერჩისათვის
+
+        # გადავცეთ queries HTML-ს შემდეგ რომ გამოჩნდეს რა გავფილტრეთ
+        context['queries'] = {f: n for f, n in self.request.GET.items()}
+
+        # თუ request GET მეთოდი გვაქვს მაშინ წავშალოთ add_item_form რადგან ის მხოლოდ POST რექუესტზე გვჭირდება
+        if self.request.method == "GET" and 'add_item_form' in self.additional_context:
+            del self.additional_context['add_item_form']
+
+        context.update(self.additional_context)  # დავამატოთ ჩვენი დამატებითი კონტექსტი
+
+        return context
+
+    def get_ordering(self):
+        order_dict = {
+            '0': None,
+            '1': 'price',
+            '2': '-price',
+            '3': '-product_add_date'
+        }
+        sort_type = self.request.GET.get('sort', '0')
+        self.ordering = order_dict.get(sort_type, None)
+
+        return super().get_ordering()
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        if self.kwargs.get('slug') is not None:
+            category = Category.objects.filter(slug=self.kwargs.get('slug')).first()
+            queryset = queryset.filter(
+                category__in=category.get_descendants(include_self=True)
+            ).distinct()
+
+        if 'q' in self.request.GET:
+            form = SearchForm(self.request.GET)
+            if form.is_valid():
+                q = form.cleaned_data['q']
+                # შევამოწმოთ დასერჩილი სიტყვა არის თუ არა სახელში, აღწერაში ან სლეგში
+                queryset = queryset.filter(
+                    Q(name__icontains=q) |
+                    Q(description__icontains=q) |
+                    Q(slug__icontains=q)
+                )
+
+        return queryset.prefetch_related('category').prefetch_related('tags')
+
+
+class ProductView(DetailView, PostRequest):
+    model = Product
+    pk_url_kwarg = 'product_id'
+    template_name = 'product_details.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        context['current_page_overload'] = context[self.get_context_object_name(self.object)].name
+        context['categories'] = Category.objects.get_main_categories_with_product_count()
+
+        context["related_products"] = self.model.objects.prefetch_related('category').filter(
+                category__in=self.object.category.all()
             )
 
-    tag = request.GET.get('tag')
-    if tag:
-        results = results.filter(tags__id=int(tag))
+        if self.request.method == "GET" and 'add_item_form' in self.additional_context:
+            del self.additional_context['add_item_form']
 
-    range_input = request.GET.get('rangeInput')
-    if range_input:
-        results = results.filter(price__lte=range_input)
-    # პროდუქტების გაფილტვრა form-ით END
+        context['add_item_form'] = self.additional_context.get('add_item_form', None) or AddItemForm()
 
-    # sorting
-    if request.GET.get('sort') == price_low_to_high:
-        results = results.order_by('price')
-    elif request.GET.get('sort') == price_high_to_low:
-        results = results.order_by('-price')
-    if request.GET.get('page') == by_date:
-        results = results.order_by('-product_add_date')
-
-    paginator = Paginator(results.prefetch_related('tags'), per_page=6)
-
-    if category:
-        categories = Category.objects.get_categories_with_product_count(category)
-    else:
-        categories = Category.objects.get_main_categories_with_product_count()
-
-    return render(
-        request,
-        template_name='index.html',
-        context={
-            "current_page_overload": category.name if category else None,
-            "category": category,
-            "categories": categories,
-            "tags": Tag.objects.all(),
-            "page_obj": paginator.get_page(page_id),
-            "add_item_form": add_item_form,
-            "form": form
-        }
-    )
-
-
-def product_details(request, slug: str, product_id: int):
-    form = None
-    if request.method == "POST":
-        item_data = request.POST.copy()
-        item_data['cart'] = request.user.usercart.id
-
-        form = _submit_form(item_data, request.method)
-
-    product = get_object_or_404(Product.objects.prefetch_related('category'), id=product_id)
-
-    return render(
-        request,
-        'product_details.html',
-        {
-            "current_page_overload": product.name,
-            "product": product,
-            "categories": Category.objects.get_categories_with_product_count(),
-            "related_products": Product.objects.prefetch_related('category').filter(
-                category__in=product.category.all()
-            ),
-            "item_form": AddItemForm() if form is None else form,
-        }
-    )
-
-
-def _submit_form(request_data, method="GET"):
-    form = None
-    if method == "POST":
-        form = AddItemForm(request_data)
-        if form.is_valid():
-            form.save()
-
-    return form
+        return context

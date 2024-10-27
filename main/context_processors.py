@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.urls import resolve, Resolver404
-from store.forms import SearchCategory
+from store.forms import SearchForm
 from order.models import UserCart
 
 
@@ -40,6 +40,6 @@ def global_variables(request):
         item_count = UserCart.objects.get(user=request.user).item_set.count()
 
     return {
-        'search_form': SearchCategory(),
+        'search_form': SearchForm(),
         'item_count_in_cart': item_count,
     }

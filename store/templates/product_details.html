@@ -55,7 +55,7 @@
                                             <i class="fa fa-minus"></i>
                                         </button>
                                     </div>
-                                    {{ item_form.quantity }}
+                                    {{ add_item_form.quantity }}
                                     <div class="input-group-btn">
                                         <button type="button" class="btn btn-sm btn-plus rounded-circle bg-light border">
                                             <i class="fa fa-plus"></i>
@@ -66,7 +66,7 @@
                                 {% include 'addons/add_to_cart_form.html' %}
                             </form>
 
-                            {{ item_form.errors }}
+                            {{ add_item_form.errors }}
 
                         </div>
                         <div class="col-lg-12">
@@ -236,4 +236,8 @@
         </div>
     </div>
     <!-- Single Product End -->
+{% endblock %}
+
+{% block scripts %}
+    {% include 'imports/alert.html' %}
 {% endblock %}

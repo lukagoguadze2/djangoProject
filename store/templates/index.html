@@ -18,7 +18,7 @@
                         <div class="col-xl-3">
                             <div class="input-group w-100 mx-auto d-flex">
 {#                                <input type="search" class="form-control p-3" placeholder="keywords" aria-describedby="search-icon-1">#}
-                                <form method="GET" class="input-group w-100 mx-auto d-flex">
+                                <form method="GET" class="input-group w-100 mx-auto d-flex forms">
                                     {{ form.q }}
                                     <button id="search-icon-1" class="input-group-text p-3"><i class="fa fa-search"></i></button>
                                 </form>
@@ -27,13 +27,13 @@
                         </div>
                         <div class="col-6"></div>
                         <div class="col-xl-3">
-                            <form method="GET" class="bg-light ps-3 py-3 rounded d-flex justify-content-between mb-4">
+                            <form method="GET" class="bg-light ps-3 py-3 rounded d-flex justify-content-between mb-4 forms">
                                 <label for="fruits">Default Sorting:</label>
-                                <select id="fruits" name="sort" class="border-0 form-select-sm bg-light me-3" onchange="this.form.submit()">
+                                <select id="fruits" name="sort" class="border-0 form-select-sm bg-light me-3">
                                     <option value="0">Nothing</option>
-                                    <option value="1">Price Low to High</option>
-                                    <option value="2">Price High to Low</option>
-                                    <option value="3">By Date</option>
+                                    <option value="1" {% if queries.sort == "1" %}selected{% endif %}>Price Low to High</option>
+                                    <option value="2" {% if queries.sort == "2" %}selected{% endif %}>Price High to Low</option>
+                                    <option value="3" {% if queries.sort == "3" %}selected{% endif %}>By Date</option>
                                 </select>
                             </form>
                         </div>
@@ -45,7 +45,7 @@
                             <div class="row g-4">
                                 <div class="col-lg-12">
                                     <div class="mb-3">
-                                        <form method="GET">
+                                        <form method="GET" class="forms">
                                             {% include 'addons/categories.html' %}
 
                                             {% include 'addons/price_slider.html' %}
@@ -86,3 +86,6 @@
     <!-- Fruits Shop End-->
 {% endblock %}
 
+{% block scripts %}
+    {% include 'imports/alert.html' %}
+{% endblock %}
