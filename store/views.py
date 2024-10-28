@@ -94,9 +94,14 @@ class IndexView(ListView, PostRequest):
                 category__in=category.get_descendants(include_self=True)
             ).distinct()
 
-        if 'q' in self.request.GET:
-            form = SearchForm(self.request.GET)
-            if form.is_valid():
+        form = SearchForm(self.request.GET)
+
+        if form.is_valid():
+            q = form.cleaned_data.get('q')
+            range_input = form.cleaned_data.get('rangeInput')
+            tag = form.cleaned_data.get('tag')
+
+            if q is not None:
                 q = form.cleaned_data['q']
                 # შევამოწმოთ დასერჩილი სიტყვა არის თუ არა სახელში, აღწერაში ან სლეგში
                 queryset = queryset.filter(
@@ -104,6 +109,12 @@ class IndexView(ListView, PostRequest):
                     Q(description__icontains=q) |
                     Q(slug__icontains=q)
                 )
+
+            if range_input is not None:
+                queryset = queryset.filter(price__lte=range_input)
+
+            if tag is not None:
+                queryset = queryset.filter(tags=tag)
 
         return queryset.prefetch_related('category').prefetch_related('tags')
 

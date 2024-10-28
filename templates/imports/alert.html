@@ -1,7 +1,7 @@
 {% if not request.user.is_authenticated and request.method == "POST" %}
     <script type="text/javascript">
         window.addEventListener('load', () => {
-            window.alert("პროდექტების დასამატებლად საჭიროა ექაუნთში შესვლა")
+            window.alert("პროდუქტების დასამატებლად საჭიროა ექაუნთში შესვლა")
         });
     </script>
 {% endif %}

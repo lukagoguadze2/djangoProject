@@ -1,4 +1,5 @@
 from django import forms
+from urllib3 import request
 
 
 class SearchForm(forms.Form):
@@ -9,5 +10,10 @@ class SearchForm(forms.Form):
                 'class': 'form-control p-3',
                 'placeholder': 'Keywords'
             }
-        )
+        ),
+        required=False
     )
+
+    rangeInput = forms.IntegerField(required=False, min_value=-1)
+    tag = forms.IntegerField(required=False, min_value=0)
+    sort = forms.IntegerField(required=False, min_value=0)
