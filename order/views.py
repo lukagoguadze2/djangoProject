@@ -1,10 +1,14 @@
 from decimal import Decimal
+
+from django.contrib.auth.decorators import login_required
 from django.db.models import F, Sum
+from django.utils.decorators import method_decorator
 from django.views.generic import TemplateView, ListView
 
 from .models import Item
 
 
+@method_decorator(login_required(login_url='user:login'), name='dispatch')
 class CartView(ListView):
     model = Item
     template_name = 'cart.html'

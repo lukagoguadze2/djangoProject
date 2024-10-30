@@ -1,0 +1,19 @@
+<!-- Login Start -->
+<div class="container-fluid py-5">
+    <div class="container">
+        {% if request.user.is_authenticated %}
+        <form method="POST">
+            {% csrf_token %}
+          <button type="submit" class="btn btn-primary w-100 mt-4">Log Out</button>
+        </form>
+        {% else %}
+        <h1 style="text-align: center">You are logged out</h1>
+            <hr>
+        <h2 style="text-align: center">
+            <a href="{% url 'user:login' %}" >Log in</a> /
+            <a href="{% url 'user:login' %}" >Sign Up</a>
+        </h2>
+        {% endif %}
+    </div>
+</div>
+<!-- Login End -->

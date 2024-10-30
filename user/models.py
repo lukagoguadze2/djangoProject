@@ -1,4 +1,5 @@
 from django.db import models
+from django.urls import reverse
 from django.contrib.auth.models import AbstractUser, PermissionsMixin
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.hashers import make_password
@@ -21,6 +22,7 @@ class UserManager(BaseUserManager):
             username=username if username else email.split('@')[0]
         )
         user.set_password(password)
+        user.is_staff = True
         user.save()
         return user
 
@@ -37,8 +39,13 @@ class User(AbstractUser, PermissionsMixin):
     date_of_birth = models.DateField(blank=True, null=True, verbose_name="დაბადების თარიღი")
     phone_number = models.CharField(max_length=13, null=True, blank=True, verbose_name="ტელეფონის ნომერი")
     address = models.CharField(max_length=255, null=True, blank=True, verbose_name="მისამართი")
+    last_activity = models.DateTimeField(auto_now=True, verbose_name="ბოლო აქტიურობა")
 
     objects = UserManager()
+
+    @staticmethod
+    def get_absolute_url():
+        return reverse('user:login')
 
     def save(self, *args, **kwargs):
         if self.password and not self.password.startswith(('pbkdf2_sha256$', 'bcrypt$', 'argon2')):
