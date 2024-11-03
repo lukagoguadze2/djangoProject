@@ -1,6 +1,7 @@
 from datetime import timedelta
 from django.utils import timezone
 from django.contrib.auth import logout
+from django.conf import settings
 from .models import User
 
 
@@ -12,8 +13,8 @@ class UpdateLastActivityMiddleware:
         if request.user.is_authenticated:
             try:
                 user_profile = request.user
-                # თუ ბოლო აქტივობიდან გასულია 1 წუთი დავალოგაუთოთ
-                if timezone.now() - user_profile.last_activity > timedelta(minutes=1):
+                # თუ ბოლო აქტივობიდან გასულია (settings.USER_IDLE_ALLOWED_TIME) წამი დავალოგაუთოთ
+                if timezone.now() - user_profile.last_activity > timedelta(seconds=settings.USER_IDLE_ALLOWED_TIME):
                     logout(request)
                 else:
                     user_profile.last_activity = timezone.now()

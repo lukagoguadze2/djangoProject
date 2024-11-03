@@ -1,7 +1,10 @@
 from abc import abstractmethod, ABC
 
 from django.db.models import Q
+from django.utils.decorators import method_decorator
 from django.views import View
+from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_cookie
 from django.views.generic import ListView, DetailView
 
 from order.forms import AddItemForm
@@ -41,6 +44,7 @@ class PostRequest(View, ABC):
         return self.get(request, *args, **kwargs)
 
 
+@method_decorator([vary_on_cookie, cache_page(60 * 15)], name='dispatch')
 class IndexView(ListView, PostRequest):
     model = Product
     paginate_by = 6

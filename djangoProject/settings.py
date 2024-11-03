@@ -33,9 +33,12 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    # '*'
+]
 
 AUTH_USER_MODEL = 'user.User'
+USER_IDLE_ALLOWED_TIME = 600  # მომხმარებელის უმოქმედობის დასაშვები დრო
 
 WEBSITE_NAME = "Culinary Cart"
 
@@ -71,10 +74,10 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    "user.middleware.UpdateLastActivityMiddleware",
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "debug_toolbar.middleware.DebugToolbarMiddleware",
+    "user.middleware.UpdateLastActivityMiddleware",
 ]
 
 ROOT_URLCONF = 'djangoProject.urls'
@@ -95,9 +98,10 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'main.context_processors.pages',
-                'main.context_processors.website_name',
                 'main.context_processors.global_variables',
+                'main.context_processors.all_categories',
+                'main.context_processors.website_name',
+                'main.context_processors.pages',
             ],
         },
     },
@@ -170,3 +174,13 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'uploads/')
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.db.DatabaseCache",
+        "LOCATION": "my_cache_table",
+    }
+}
+
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+ADMIN_EMAIL = 'admin@admin.com'
