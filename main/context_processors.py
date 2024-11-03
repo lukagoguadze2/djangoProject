@@ -1,7 +1,10 @@
 from django.conf import settings
 from django.urls import resolve, Resolver404
+from django.core.cache import cache
+
 from store.forms import SearchForm
 from order.models import UserCart
+from store.models import Category
 
 
 def pages(request):
@@ -42,4 +45,19 @@ def global_variables(request):
     return {
         'search_form': SearchForm(),
         'item_count_in_cart': item_count,
+    }
+
+
+def all_categories(request):
+    cache_key = 'all_categories'
+    cache_timeout = 60 * 15  # 15 წუთი
+
+    categories = cache.get(cache_key)
+
+    if not categories:
+        categories = Category.objects.all()
+        cache.set(cache_key, categories, cache_timeout)
+
+    return {
+        'all_categories': Category.objects.all()
     }
