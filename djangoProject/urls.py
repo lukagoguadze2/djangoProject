@@ -14,27 +14,35 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django.conf.urls.i18n import i18n_patterns
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from debug_toolbar.toolbar import debug_toolbar_urls
 from django.conf import settings
 from main.views import _404, _500
 
-
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('i18n/', include('django.conf.urls.i18n')),
+]
+
+urlpatterns += i18n_patterns(
     path('store/', include('store.urls', namespace='store')),
     path('order/', include('order.urls', namespace='order')),
     path('auth/', include('user.urls', namespace='user')),
-    path('', include('main.urls', namespace='main'))
-
-]
+    path('', include('main.urls', namespace='main')),
+    prefix_default_language=False,
+)
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += debug_toolbar_urls()
 
+if 'rosetta' in settings.INSTALLED_APPS:
+    urlpatterns += [
+        re_path(r'^rosetta/', include('rosetta.urls'))
+    ]
 
 handler404 = _404.as_view()
 handler500 = _500.as_view()

@@ -1,5 +1,6 @@
 from django import template
 from urllib.parse import urlencode
+from django.conf import settings
 
 register = template.Library()
 
@@ -50,3 +51,12 @@ def is_dict(value):
 @register.filter(name="to_string")
 def to_string(value):
     return str(value)
+
+
+@register.filter(name="language_change_url")
+def language_change_url(value, language_code="ka"):
+    value = value.lstrip('/')
+    for lang in settings.LANGUAGES:
+        value = value.lstrip(lang[0] + "/")
+
+    return "/" + value if language_code == "ka" else f"/{language_code}/{value}"

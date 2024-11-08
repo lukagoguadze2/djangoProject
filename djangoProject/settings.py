@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+
+from django.utils.translation import gettext_lazy as _
 from dotenv import load_dotenv, set_key
 from django.core.management.utils import get_random_secret_key
 import os
@@ -40,7 +42,7 @@ ALLOWED_HOSTS = [
 AUTH_USER_MODEL = 'user.User'
 USER_IDLE_ALLOWED_TIME = 600  # მომხმარებელის უმოქმედობის დასაშვები დრო
 
-WEBSITE_NAME = "Culinary Cart"
+WEBSITE_NAME = _("კულინარიის კალათა")
 
 INTERNAL_IPS = [
     "127.0.0.1",
@@ -56,7 +58,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    # third party
     "mptt",
+    "modeltranslation",
+    "rosetta",
+
     "store.apps.StoreConfig",
     "order.apps.OrderConfig",
     "user.apps.UserConfig",
@@ -71,6 +78,7 @@ if DEBUG:
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -148,6 +156,7 @@ LANGUAGE_CODE = 'ka'
 TIME_ZONE = 'UTC'
 
 USE_I18N = True
+USE_L10N = True
 
 USE_TZ = True
 
@@ -184,3 +193,19 @@ CACHES = {
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 ADMIN_EMAIL = 'admin@admin.com'
+
+LANGUAGES = (
+    ('ka', _('ქართული')),
+    ('en', _('ინგლისური')),
+)
+
+LOCALE_PATHS = [
+    os.path.join(BASE_DIR, 'locale'),
+]
+
+MODELTRANSLATION_DEFAULT_LANGUAGE = 'ka'
+
+MODELTRANSLATION_TRANSLATION_FILES = (
+    'store.translation',
+)
+
