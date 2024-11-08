@@ -44,7 +44,7 @@ class PostRequest(View, ABC):
         return self.get(request, *args, **kwargs)
 
 
-# @method_decorator([vary_on_cookie, cache_page(60 * 15)], name='dispatch')
+@method_decorator([vary_on_cookie, cache_page(60 * 15)], name='dispatch')
 class IndexView(ListView, PostRequest):
     model = Product
     paginate_by = 6
