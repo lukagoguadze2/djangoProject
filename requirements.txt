@@ -11,3 +11,6 @@ certifi~=2024.8.30
 urllib3~=2.2.3
 idna~=3.10
 django-mptt~=0.16.0
+charset-normalizer~=3.3.2
+django-modeltranslation~=0.19.10
+django-rosetta==0.10.1
