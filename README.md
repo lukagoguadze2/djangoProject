@@ -14,7 +14,7 @@ This is a simple Django project for managing a store, including categories and p
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/django-store-project.git
+   git clone https://github.com/lukagoguadze2/djangoProject.git
    cd django-store-project
    ```
 
